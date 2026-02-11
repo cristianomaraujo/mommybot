@@ -7,7 +7,6 @@ import os
 SENHA_OPEN_AI = os.getenv("SENHA_OPEN_AI")
 openai.api_key = SENHA_OPEN_AI
 
-
 # URL da imagem do logo no repositório do GitHub
 logo_url = "https://github.com/cristianomaraujo/mommybot/blob/main/eng.jpg?raw=true"
 logo_url3 = "https://github.com/cristianomaraujo/mommybot/blob/main/capa3.jpg?raw=true"
@@ -18,7 +17,11 @@ st.sidebar.image(logo_url3, use_column_width=True, width=800)
 st.image(logo_url, use_column_width=True, width=800)
 
 # Texto de abertura
-abertura = st.write("Hello! I'm MommyBot, an AI-powered virtual assistant here to help you with breastfeeding support and guidance for breast injuries or difficulties. To start, simply type 'hello' in your native language (for example: Hi, Oi, Hola, Salut, Hallo, 你好, привет), or enter any questions you have about breastfeeding in the field below.")
+abertura = st.write(
+    "Hello! I'm MommyBot, an AI-powered virtual assistant here to help you with breastfeeding support and guidance for breast injuries or difficulties. "
+    "To start, simply type 'hello' in your native language (for example: Hi, Oi, Hola, Salut, Hallo, 你好, привет), or enter any questions you have "
+    "about breastfeeding in the field below."
+)
 
 # Título da barra lateral
 st.sidebar.title("References")
@@ -75,7 +78,6 @@ condicoes = (
     "For the option 'Maternal conditions (tuberculosis, hepatitis, etc.)', provide the following guidance: In some cases, breastfeeding is not contraindicated even if the mother has conditions such as tuberculosis, leprosy, hepatitis B or C, dengue, or uses tobacco or alcohol — always follow the pediatrician's recommendation. Seek professional guidance in these situations."
     "Always refer to each topic individually, based on the patient’s selected option."
     "At the end of each answered topic, gently ask the patient if they would like to return to the main list of topics or if they have no further questions. If they’re finished, end the session by thanking them for using MommyBot."
-
 )
 
 st.sidebar.markdown(
@@ -94,38 +96,40 @@ st.sidebar.markdown(
 # Criação da função para renderizar a conversa com barra de rolagem
 def render_chat(hst_conversa):
     for i in range(1, len(hst_conversa)):
-        if i % 2 == 0:
-            msg("**MommyBot**:" + hst_conversa[i]['content'], key=f"bot_msg_{i}")
+        if hst_conversa[i]["role"] == "assistant":
+            msg("**MommyBot**: " + hst_conversa[i]["content"], key=f"bot_msg_{i}")
         else:
-            msg("**You**:" + hst_conversa[i]['content'], is_user=True, key=f"user_msg_{i}")
+            msg("**You**: " + hst_conversa[i]["content"], is_user=True, key=f"user_msg_{i}")
 
-    # Código para a barra de rolagem
-    st.session_state['rendered'] = True
-    if st.session_state['rendered']:
+    st.session_state["rendered"] = True
+    if st.session_state["rendered"]:
         script = """
         const chatElement = document.querySelector('.streamlit-chat');
-        chatElement.scrollTop = chatElement.scrollHeight;
+        if (chatElement) { chatElement.scrollTop = chatElement.scrollHeight; }
         """
-        st.session_state['rendered'] = False
-        st.write('<script>{}</script>'.format(script), unsafe_allow_html=True)
+        st.session_state["rendered"] = False
+        st.write("<script>{}</script>".format(script), unsafe_allow_html=True)
 
 st.write("***")
 
-if 'hst_conversa' not in st.session_state:
-    st.session_state.hst_conversa = [{"role": "user", "content": condicoes}]
+if "hst_conversa" not in st.session_state:
+    # Condições devem ser SYSTEM, não USER
+    st.session_state.hst_conversa = [{"role": "system", "content": condicoes}]
 
 if text_input_center:
     st.session_state.hst_conversa.append({"role": "user", "content": text_input_center})
+
     retorno_openai = openai.ChatCompletion.create(
         model="gpt-5.2",
         messages=st.session_state.hst_conversa,
-        max_tokens=500,
+        max_completion_tokens=500,  # <- CORREÇÃO DO ERRO
         n=1
     )
-    st.session_state.hst_conversa.append({"role": "assistant", "content": retorno_openai['choices'][0]['message']['content']})
+
+    st.session_state.hst_conversa.append(
+        {"role": "assistant", "content": retorno_openai["choices"][0]["message"]["content"]}
+    )
 
 # RENDERIZAÇÃO DA CONVERSA
 if len(st.session_state.hst_conversa) > 1:
     render_chat(st.session_state.hst_conversa)
-
-
