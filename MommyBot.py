@@ -117,7 +117,7 @@ if 'hst_conversa' not in st.session_state:
 if text_input_center:
     st.session_state.hst_conversa.append({"role": "user", "content": text_input_center})
     retorno_openai = openai.ChatCompletion.create(
-        model="gpt-4o",
+        model="gpt-5.2",
         messages=st.session_state.hst_conversa,
         max_tokens=500,
         n=1
@@ -127,4 +127,5 @@ if text_input_center:
 # RENDERIZAÇÃO DA CONVERSA
 if len(st.session_state.hst_conversa) > 1:
     render_chat(st.session_state.hst_conversa)
+
 
