@@ -123,7 +123,7 @@ if text_input_center:
     retorno_openai = openai.ChatCompletion.create(
         model="gpt-5.1",
         messages=st.session_state.hst_conversa,
-        max_completion_tokens=500,  
+        max_completion_tokens=2000,  
         n=1
     )
 
@@ -134,3 +134,4 @@ if text_input_center:
 # RENDERIZAÇÃO DA CONVERSA
 if len(st.session_state.hst_conversa) > 1:
     render_chat(st.session_state.hst_conversa)
+
